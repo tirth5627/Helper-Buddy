@@ -81,18 +81,20 @@ export function LoginForm() {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox id="remember" className="border-zinc-700 data-[state=checked]:bg-purple-600" 
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(!rememberMe)}
-            />
-            <label
-              htmlFor="remember"
-              className="text-sm text-zinc-400 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Remember me
-            </label>
-          </div>
+        <div className="flex items-center space-x-2">
+      <Checkbox
+        id="remember"
+        className="border-zinc-700 data-[state=checked]:bg-purple-600"
+        checked={rememberMe}
+        onCheckedChange={(checked) => setRememberMe(!!checked)} // Correct event handler
+      />
+      <label
+        htmlFor="remember"
+        className="text-sm text-zinc-400 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        Remember me
+      </label>
+    </div>
           <Link
             href="/auth/forgot-password"
             className="text-sm text-purple-400 hover:text-purple-300"
