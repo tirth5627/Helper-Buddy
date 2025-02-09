@@ -1,175 +1,19 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/client"
 }
 
 datasource db {
-  provider = "postgresql" // You can use "mysql" as well depending on the DB you're using
-  url      = env("DATABASE_URL") // Make sure to add DATABASE_URL in .env file
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  user_id        Int          @id @default(autoincrement())
-  email          String       @unique
-  password_hash  String
-  first_name     String
-  last_name      String
-  phone_number   String
-  role           UserRole     @default(customer)
-  created_at     DateTime     @default(now())
-  updated_at     DateTime     @updatedAt
-  service_partner ServicePartner? @relation
-  orders         ServiceOrder[]
-  wallet         Wallet?      
-  referrals      Referral[]   @relation("ReferredBy")
-  testimonials   Testimonial[]
-  notifications  Notification[]
-
-  Referral Referral[]
-}
-
-enum UserRole {
-  customer
-  admin
-  service_partner
-}
-
-model Service {
-  service_id   Int         @id @default(autoincrement())
-  name         String
-  description  String?
-  price        Float
-  category     String?
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
-  orders       ServiceOrder[]
-}
-
-model ServicePartner {
-  partner_id   Int         @id @default(autoincrement())
-  user_id      Int          @unique
-  company_name String
-  address      String
-  pin_codes    String    // Stores a comma-separated list of pin codes
-  status       ServicePartnerStatus @default(pending)
-  created_at   DateTime    @default(now())
-  updated_at   DateTime    @updatedAt
-  user         User        @relation(fields: [user_id], references: [user_id])
-  orders       ServiceOrder[]
-}
-
-enum ServicePartnerStatus {
-  pending
-  approved
-  rejected
-}
-
-model ServiceOrder {
-  order_id       Int         @id @default(autoincrement())
-  user_id        Int
-  service_id     Int
-  partner_id     Int?
-  order_date     DateTime    @default(now())
-  service_date   DateTime
-  remarks        String?
-  status         ServiceOrderStatus @default(pending)
-  payment_status PaymentStatus @default(pending)
-  payment        Payment?
-  user           User        @relation(fields: [user_id], references: [user_id])
-  service        Service     @relation(fields: [service_id], references: [service_id])
-  service_partner ServicePartner? @relation(fields: [partner_id], references: [partner_id])
-  review         Review?
-}
-
-enum ServiceOrderStatus {
-  pending
-  in_progress
-  completed
-  canceled
-}
-
-enum PaymentStatus {
-  pending
-  completed
-  failed
-}
-
-model Payment {
-  payment_id     Int         @id @default(autoincrement())
-  order_id       Int          @unique
-  amount         Float
-  payment_date   DateTime    @default(now())
-  payment_method PaymentMethod
-  payment_status PaymentStatus
-  transaction_id String?
-  serviceOrder   ServiceOrder @relation(fields: [order_id], references: [order_id])
-}
-
-enum PaymentMethod {
-  razorpay
-  wallet
-}
-
-model Wallet {
-  wallet_id Int       @id @default(autoincrement())
-  user_id   Int       @unique
-  balance   Float     @default(0.00)
-  user      User      @relation(fields: [user_id], references: [user_id])
-}
-
-model Referral {
-  referral_id   Int       @id @default(autoincrement())
-  user_id       Int       @unique
-  referral_code String    @unique
-  referred_by   Int?
-  bonus         Float     @default(0.00)
-  user          User      @relation(fields: [user_id], references: [user_id])
-  referred_by_user User?  @relation("ReferredBy", fields: [referred_by], references: [user_id])
-}
-
-model Review {
-  review_id   Int         @id @default(autoincrement())
-  order_id    Int         @unique
-  rating      Int         // Enforce rating validation in application code or database
-  review_text String?
-  created_at  DateTime    @default(now())
-  serviceOrder ServiceOrder @relation(fields: [order_id], references: [order_id])
-}
-
-model Blog {
-  blog_id    Int         @id @default(autoincrement())
-  title      String
-  content    String
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
-}
-
-model FAQ {
-  faq_id   Int     @id @default(autoincrement())
-  question String
-  answer   String
-}
-
-model Testimonial {
-  testimonial_id  Int     @id @default(autoincrement())
-  user_id         Int
-  testimonial_text String
-  created_at      DateTime @default(now())
-  user            User     @relation(fields: [user_id], references: [user_id])
-}
-
-model Analytics {
-  analytics_id Int       @id @default(autoincrement())
-  traffic_count Int      @default(0)
-  sales_count   Int      @default(0)
-  date          DateTime @default(now())
-}
-
-model Notification {
-  notification_id  Int     @id @default(autoincrement())
-  user_id          Int
-  notification_text String
-  read_status      Boolean  @default(false)
-  created_at       DateTime @default(now())
-  user             User     @relation(fields: [user_id], references: [user_id])
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName      String
+  lastName      String
+  password      String
+  phoneNumber   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,37 +1,27 @@
-import db from "@/src/db";
 import { NextResponse } from "next/server";
-import {hash} from "bcrypt";
+import bcrypt from "bcryptjs";
 import * as z from "zod";
+import { db } from "../../../lib/db";
 
 
-const UserSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email'),
-  first_name: z
-    .string()
-    .min(3, 'First name is required')
-    .max(25, 'First name is too long')
-    .regex(/^[A-Za-z]+$/, 'First name should not contain numbers or special characters'),
-  last_name: z
-    .string()
-    .min(3, 'Last name is required')
-    .max(25, 'Last name is too long')
-    .regex(/^[A-Za-z]+$/, 'Last name should not contain numbers or special characters'),
-  password: z
-    .string()
-    .min(8, 'Password must have at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  confirmPassword: z.string().min(1, 'Password confirmation is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const UserSchema =  z
+.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+})
 
 export async function POST(req :Request) {
+    console.log(db)
   try {
     const body = await req.json();
-    const { first_name, last_name, email, password,confirmPassword } = UserSchema.parse(body);
+    const { firstName, lastName, email, password,confirmPassword } = UserSchema.parse(body);
 
     const existingUser = await db.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -39,15 +29,16 @@ export async function POST(req :Request) {
     }
 
     // Hash password
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Store user in DB
     const newUser = await db.user.create({
-      data: { first_name,last_name, email, password: hashedPassword },
+      data: { firstName,lastName, email, password: hashedPassword },
     });
     const {password :newUserPassword,...rest}=newUser;
-    return NextResponse.json({ message: "User created", user: rest});
+    return NextResponse.json({success:true, user: rest});
   } catch (error) {
+    console.log(error);
     return NextResponse.json({ error: "Signup failed" }, { status: 500 });
   }
 }

@@ -1,129 +1,102 @@
-import db from '@/src/db'; 
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { NextAuthOptions } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
-import bcrypt from 'bcryptjs';
-import { SignJWT, importJWK, JWTPayload } from 'jose';
-import { randomUUID } from 'crypto';
-
-interface HelperBuddySession {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    jwtToken: string;
-  };
-}
-
-interface HelperBuddyToken extends JWT {
-  uid: string;
-  jwtToken: string;
-}
-
-interface HelperBuddyUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  token: string;
-}
-
-/**
- * Generates a JWT token for authentication
- */
-const generateJWT = async (payload: JWTPayload) => {
-  const secret = process.env.JWT_SECRET || 'supersecretkey';
-
-  const jwk = await importJWK({ k: secret, alg: 'HS256', kty: 'oct' });
-
-  return new SignJWT({
-    ...payload,
-    iat: Math.floor(Date.now() / 1000),
-    jti: randomUUID(),
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('30d')
-    .sign(jwk);
-};
+import NextAuth, { type NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import bcrypt from "bcryptjs";
+import { db } from "./db";
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
-      name: 'Helper Buddy Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'text', placeholder: 'example@email.com' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "text", placeholder: "Enter your email" },
+        password: { label: "Password", type: "password", placeholder: "Enter your password" },
       },
-      async authorize(credentials: any) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Missing email or password');
+          throw new Error("Missing credentials");
         }
 
-        // Fetch user from DB
         const user = await db.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user) {
-          throw new Error('User not found');
+        if (!user || !user.password) {
+          throw new Error("Invalid email or password");
         }
 
-        // Verify password
-        const isValidPassword = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isValidPassword) {
-          throw new Error('Invalid password');
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isPasswordValid) {
+          throw new Error("Incorrect password");
         }
-
-        // Generate JWT Token
-        const jwt = await generateJWT({ id: user.id });
-
-        // Update user token in DB
-        await db.user.update({
-          where: { id: user.id },
-          data: { token: jwt },
-        });
 
         return {
           id: user.id,
-          name: user.name,
           email: user.email,
-          role: user.role || 'user',
-          token: jwt,
+          name: `${user.firstName} ${user.lastName}`,
         };
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET || 'secr3tkey',
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
-    async session({ session, token }) {
-      const newSession: HelperBuddySession = session as HelperBuddySession;
-
-      if (newSession.user && token.uid) {
-        newSession.user.id = token.uid;
-        newSession.user.jwtToken = token.jwtToken;
-        newSession.user.role = token.role;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
       }
-
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user = {
+          id: token.id as string,
+          email: token.email as string,
+          name: token.name as string,
+        };
+      }
       return session;
     },
-    jwt: async ({ token, user }) => {
-      const newToken: HelperBuddyToken = token as HelperBuddyToken;
-
-      if (user) {
-        newToken.uid = user.id;
-        newToken.jwtToken = user.token;
-        newToken.role = (user as HelperBuddyUser).role;
-      }
-
-      return newToken;
+    async redirect({ url, baseUrl }) {
+      return baseUrl; // Redirect to homepage after login
     },
   },
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
+
+
+// Type declarations for TypeScript support
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+    };
+  }
+  interface User {
+    id: string;
+    email: string;
+    name: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    email: string;
+    name: string;
+  }
+}

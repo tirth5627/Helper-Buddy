@@ -2,12 +2,53 @@
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import { Apple, Eye, EyeOff, ToggleLeft as Google } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation"
+
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      firstName: formData.get("first_name"),
+      lastName: formData.get("last_name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      confirmPassword: formData.get("confirmPassword"),
+    };
+
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Signup failed");
+      }
+
+router.push("/login");
+    } catch (error: any) {
+      setErrorMessage(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -19,91 +60,75 @@ export function RegisterForm() {
         </Link>
       </p>
 
-      <form className="space-y-4">
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <Input
             type="text"
+            name="first_name"
             placeholder="First name"
             className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400"
+            required
           />
           <Input
             type="text"
+            name="last_name"
             placeholder="Last name"
             className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400"
+            required
           />
         </div>
-        
+
         <Input
           type="email"
+          name="email"
           placeholder="Email"
           className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400"
+          required
         />
-         <Input
-          type="phonenumber"
+
+        {/* <Input
+          type="text"
+          name="phone_number"
           placeholder="Phone Number"
           className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400"
-        />
+        /> */}
 
         <div className="relative">
           <Input
             type={showPassword ? "text" : "password"}
+            name="password"
             placeholder="Enter your password"
             className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400 pr-10"
+            required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300"
           >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5" />
-            ) : (
-              <Eye className="h-5 w-5" />
-            )}
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
-          
         </div>
+
         <div className="relative">
           <Input
             type={showPassword ? "text" : "password"}
+            name="confirmPassword"
             placeholder="Confirm your password"
             className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-400 pr-10"
+            required
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300"
-          >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5" />
-            ) : (
-              <Eye className="h-5 w-5" />
-            )}
-          </button>
-          
         </div>
 
-        <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white">
-          Create account
+        <Button
+          className="w-full bg-purple-600 hover:bg-purple-500 text-white"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Creating account..." : "Create account"}
         </Button>
-
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-700"></div>
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-zinc-950 px-2 text-zinc-400">Or register with</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" className="border-zinc-700 text-black hover:bg-zinc-800 hover:text-white">
-            <Image src="/images/google-icon-updated.svg" alt="Google Icon" width={20} height={20} className="mr-2" />Google
-          </Button>
-          <Button variant="outline" className="border-zinc-700 text-black hover:bg-zinc-800 hover:text-white">
-          <Image src="/images/apple-icon.svg" alt="Google Icon" width={20} height={20} className="mr-2" />Apple
-          </Button>
-        </div>
       </form>
     </>
   );
