@@ -1,0 +1,76 @@
+"use server";
+
+import { db } from "@/src/lib/db";
+import  cloudinary  from "@/src/lib/cloudinary";
+
+export async function registerServicePartner(formData: any) {
+    try {
+
+        const data:any=db.servicePartner.findUnique({
+            where:{email:formData.email}
+        })
+        if(data?.id){
+            return { error: "Please wait for admin approval." };
+        }
+        const fullName = formData.get("fullName");
+        const email = formData.get("email");
+        const address = formData.get("address");
+        const phone = formData.get("phone");
+        const experience = formData.get("experience");
+        const bio = formData.get("bio");
+        const upi = formData.get("upi");
+        const serviceAreas = formData.get("serviceAreas");
+        const idCardFile = formData.get("idCard");
+        const userId=formData.get("userId");
+        if (!fullName || !email || !address || !phone || !experience || !serviceAreas || !idCardFile || !userId) {
+            return { error: "Missing required fields." };
+        }
+        if (!(idCardFile instanceof File)) {
+            return { error: "Invalid file upload." };
+        }
+
+        const fileBuffer = await idCardFile.arrayBuffer();
+        const base64String = Buffer.from(fileBuffer).toString("base64");
+        const dataUri = `data:${idCardFile.type};base64,${base64String}`;
+        const uploadResponse = await cloudinary.uploader.upload(dataUri, {
+            folder: "services", // Cloudinary folder
+            resource_type: "image",
+        });
+        const newServicePartner = await db.servicePartner.create({
+            data: {
+                userId: userId,
+                fullName,
+                email,
+                address,
+                phone,
+                experience: parseInt(experience),
+                bio,
+                upi,
+                serviceAreas: serviceAreas,
+                status: "pending",
+                idCard: uploadResponse.secure_url,
+            },
+        });
+
+        return { success: "Service Partner registered successfully!", servicePartner: newServicePartner };
+    } catch (error) {
+        console.error("Error registering service partner:", error);
+        return { error: "Failed to register service partner." };
+    }
+}
+export async function isServicePartner(userId: string) {
+    try {
+        if (!userId) {
+            return {success: false, error: "User ID is required." };
+        }
+
+        const servicePartner = await db.servicePartner.findUnique({
+            where: { userId },
+        });
+        if(!servicePartner) return {success: false, error: "Service partner not found." };
+        return { success: true, data:servicePartner };
+    } catch (error) {
+        console.error("Error checking service partner status:", error);
+        return {success: false, error: "Failed to check service partner status." };
+    }
+}
