@@ -57,7 +57,7 @@ export default function NavMobile({ onClick, open }: NavMobileProps) {
                     {/* logo and close button */}
                     <div className="flex items-center justify-between">
                         <Logo />
-                        <button onClick={onClick} className="p-2">
+                        <button onClick={onClick} className="p-2" aria-label="Close menu">
                             <CloseIcon className="w-6" />
                         </button>
                     </div>

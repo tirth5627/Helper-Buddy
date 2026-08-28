@@ -158,6 +158,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                                 type="button"
                                 className="flex items-center gap-2 py-2 hover:opacity-80 transition-opacity"
                                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                aria-label="Toggle user menu"
                             >
                                 <UserIcon
                                     stroke={color}
