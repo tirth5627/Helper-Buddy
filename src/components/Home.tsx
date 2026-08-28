@@ -1,14 +1,12 @@
-"use client";
-
 import { MotionWrapper } from "@/src/components/other/MotionWrapper";
-import { SectionLayout } from "@/src/components/layout/sectionLayout";
 import { Text } from "@/src/components/other/text";
 import { Heading } from "@/src/components/other/head";
 import { Testimonials } from "@/src/components/other/testimonials";
 import { Stats } from "@/src/components/other/stats";
 import FAQ from "@/src/components/other/FAQ";
 import ApplianceRepair from "@/src/components/other/OurServices";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 
 interface HomeProps {
   statsData: {
@@ -22,17 +20,23 @@ interface HomeProps {
 }
 
 export default function Home({ statsData, testimonialsData }: HomeProps) {
-  const router = useRouter();
-
   return (
     <MotionWrapper>
       {/* Hero Section */}
-      <SectionLayout
-        bg="url('/images/mai.png')"
-        className="relative flex items-center justify-center min-h-screen"
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-50" />
-        <div className="relative z-10 flex flex-col items-center text-center text-white p-4 md:p-8 max-w-6xl mx-auto">
+      <section className="relative flex items-center justify-center min-h-screen w-full">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/mai.png"
+            alt="Helper Buddy Hero Background"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="100vw"
+            quality={85}
+          />
+        </div>
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />
+        <div className="relative z-20 flex flex-col items-center text-center text-white p-4 md:p-8 max-w-6xl mx-auto">
           <Heading
             as="h1"
             intent="hero-section"
@@ -45,14 +49,14 @@ export default function Home({ statsData, testimonialsData }: HomeProps) {
           <Text className="mt-4 md:text-lg lg:text-xl text-white">
             Expert Help, Right at Your Doorstep
           </Text>
-          <button
-            onClick={() => router.push("/services")}
+          <Link
+            href="/services"
             className="mt-6 px-8 md:px-12 py-3 text-base md:text-lg bg-black text-white rounded-md hover:bg-gray-800 transition duration-300 ease-in-out"
           >
             Book Now
-          </button>
+          </Link>
         </div>
-      </SectionLayout>
+      </section>
 
       {/* Stats Section */}
       <section className="w-full bg-[rgb(6,8,20)] overflow-hidden" id="stats">
