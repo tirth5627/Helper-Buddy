@@ -73,6 +73,7 @@ export const Footer: React.FC = () => {
                     <h2 className="text-2xl font-bold text-white">Location</h2>
                     <div className="relative h-56 w-full rounded-lg overflow-hidden shadow-lg border-2 border-gray-700">
                         <iframe
+                            title="Google Maps Location"
                             className="absolute inset-0 w-full h-full"
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3718.727889356322!2d72.84831267604505!3d21.239818980676194!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be04f19b1cbca6f%3A0x7b5cd817dc032251!2sAmroli%20Cross%20Rd%2C%20Bhagu%20Nagar-1%2C%20Amroli%2C%20Surat%2C%20Gujarat%20394107!5e0!3m2!1sen!2sin!4v1708416452987!5m2!1sen!2sin"
                             allowFullScreen
@@ -95,16 +96,16 @@ export const Footer: React.FC = () => {
                 <div className="space-y-4 mt-4">
                     <h3 className="text-lg font-semibold text-white">Follow Us</h3>
                     <div className="flex justify-center gap-6">
-                        <Link href="https://www.facebook.com/people/Helper-Buddy/" className="text-gray-300 hover:text-blue-500 transition-all duration-300 transform hover:scale-110">
+                        <Link aria-label="Facebook" href="https://www.facebook.com/people/Helper-Buddy/" className="text-gray-300 hover:text-blue-500 transition-all duration-300 transform hover:scale-110">
                             <FaFacebookF className="text-xl" />
                         </Link>
-                        <Link href="https://www.instagram.com/helperbuddy.in/" className="text-gray-300 hover:text-pink-500 transition-all duration-300 transform hover:scale-110">
+                        <Link aria-label="Instagram" href="https://www.instagram.com/helperbuddy.in/" className="text-gray-300 hover:text-pink-500 transition-all duration-300 transform hover:scale-110">
                             <FaInstagram className="text-xl" />
                         </Link>
-                        <Link href="https://www.linkedin.com/company/helperbuddy/" className="text-gray-300 hover:text-blue-700 transition-all duration-300 transform hover:scale-110">
+                        <Link aria-label="LinkedIn" href="https://www.linkedin.com/company/helperbuddy/" className="text-gray-300 hover:text-blue-700 transition-all duration-300 transform hover:scale-110">
                             <FaLinkedinIn className="text-xl" />
                         </Link>
-                        <Link href="https://x.com/helperbuddyin" className="text-gray-300 hover:text-blue-400 transition-all duration-300 transform hover:scale-110">
+                        <Link aria-label="Twitter" href="https://x.com/helperbuddyin" className="text-gray-300 hover:text-blue-400 transition-all duration-300 transform hover:scale-110">
                             <FaTwitter className="text-xl" />
                         </Link>
                     </div>
