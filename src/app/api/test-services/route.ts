@@ -6,16 +6,27 @@ export async function GET() {
 
     try {
         const services = await db.service.findMany({
-            include: {
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                category: true,
+                basePrice: true,
+                estimatedTime: true,
+                includes: true,
+                imageUrl: true,
+
                 requests: {
                     select: {
                         id: true,
                         status: true,
+
                         Review: {
                             where: {
                                 status: "true",
                             },
                             select: {
+                                id: true,
                                 rating: true,
                             },
                         },
@@ -24,18 +35,21 @@ export async function GET() {
             },
         });
 
-        const duration = performance.now() - start;
+        const queryDurationMs = performance.now() - start;
 
         return NextResponse.json({
             success: true,
             count: services.length,
-            queryTimeMs: Number(duration.toFixed(2)),
+            queryTimeMs: Number(queryDurationMs.toFixed(2)),
         });
     } catch (error) {
-        console.error(error);
+        console.error("Error fetching services:", error);
 
         return NextResponse.json(
-            { success: false },
+            {
+                success: false,
+                error: "Failed to fetch services",
+            },
             { status: 500 }
         );
     }
