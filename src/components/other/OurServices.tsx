@@ -67,16 +67,20 @@ const allServices = serviceCategories.flatMap((category) =>
   }))
 );
 
+import Image from "next/image";
+
 const ServiceCard = ({ service }) => (
   <a
     href={service.link}
     className="block w-[260px] xs:w-[280px] sm:w-[240px] h-[260px] flex-shrink-0 bg-white/30 backdrop-blur-md border border-gray-400 rounded-xl overflow-hidden snap-start hover:border-gray-500 hover:shadow-md transition-all duration-300 group"
   >
-    <div className="h-[160px] overflow-hidden">
-      <img
+    <div className="h-[160px] relative overflow-hidden">
+      <Image
         src={service.img}
         alt={service.title}
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        fill
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+        sizes="(max-width: 640px) 280px, 240px"
       />
     </div>
     <div className="p-4">
@@ -102,6 +106,7 @@ const SearchBar = ({ value, onChange, onClear }) => (
     {value && (
       <button
         onClick={onClear}
+        aria-label="Clear search"
         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
       >
         <X className="w-5 h-5" />
@@ -141,6 +146,7 @@ const ServiceRow = ({ category, filteredServices }) => {
           <button
             className="absolute -left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-white p-1.5 sm:p-2 rounded-full shadow-md z-10 hover:scale-110 transition"
             onClick={() => scroll("left")}
+            aria-label="Scroll left"
           >
             <ChevronLeft size={24} className="text-black" />
           </button>
@@ -159,6 +165,7 @@ const ServiceRow = ({ category, filteredServices }) => {
           <button
             className="absolute -right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-white p-1.5 sm:p-2 rounded-full shadow-md z-10 hover:scale-110 transition"
             onClick={() => scroll("right")}
+            aria-label="Scroll right"
           >
             <ChevronRight size={24} className="text-black" />
           </button>
